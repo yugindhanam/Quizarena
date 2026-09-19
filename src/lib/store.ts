@@ -1,5 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
+import os from "os";
 import { PrismaClient } from "@prisma/client";
 import { Store } from "./types";
 import { seed } from "./seed";
@@ -7,8 +8,16 @@ const globals = globalThis as unknown as {
   prisma?: PrismaClient;
   queue?: Promise<unknown>;
 };
-const file = path.join(process.cwd(), ".data", "store.json");
-const postgres = process.env.DATA_MODE === "postgres";
+const isServerless = Boolean(
+  process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME,
+);
+const postgres =
+  process.env.DATA_MODE === "postgres" ||
+  (isServerless && Boolean(process.env.DATABASE_URL) && process.env.DATA_MODE !== "local");
+const dataDir = isServerless
+  ? path.join(os.tmpdir(), ".data")
+  : path.join(process.cwd(), ".data");
+const file = path.join(dataDir, "store.json");
 const prisma = () => (globals.prisma ??= new PrismaClient());
 export async function transact<T>(
   fn: (db: Store) => T | Promise<T>,
