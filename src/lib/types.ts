@@ -1,0 +1,64 @@
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+  passwordHash: string;
+  createdAt: string;
+};
+export type Option = { id: string; optionText: string; isCorrect?: boolean };
+export type Question = {
+  id: string;
+  questionText: string;
+  marks: number;
+  negativeMarks: number;
+  position: number;
+  options: Option[];
+};
+export type Quiz = {
+  id: string;
+  quizCode: string;
+  title: string;
+  description: string;
+  category: string;
+  difficulty: string;
+  duration: number;
+  totalMarks: number;
+  startTime: string | null;
+  endTime: string | null;
+  leaderboardEnabled: boolean;
+  showAnswers: boolean;
+  showScore: boolean;
+  allowGuests: boolean;
+  shuffleQuestions: boolean;
+  shuffleOptions: boolean;
+  maxAttempts: number;
+  published: boolean;
+  createdAt: string;
+  creatorId: string;
+  questions: Question[];
+};
+export type Answer = {
+  questionId: string;
+  selectedOptionId: string | null;
+  review: boolean;
+  isCorrect?: boolean;
+  marksAwarded?: number;
+};
+export type Attempt = {
+  id: string;
+  quizId: string;
+  userId: string | null;
+  guestName: string | null;
+  guestToken: string | null;
+  startedAt: string;
+  deadline: string;
+  submittedAt: string | null;
+  score: number;
+  percentage: number;
+  timeTaken: number;
+  status: string;
+  questionOrder: string[];
+  optionOrder: Record<string, string[]>;
+  answers: Answer[];
+};
+export type Store = { users: User[]; quizzes: Quiz[]; attempts: Attempt[] };

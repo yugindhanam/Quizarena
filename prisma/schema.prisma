@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+model User {
+  id String @id
+  email String @unique
+  name String
+  passwordHash String
+  createdAt DateTime @default(now())
+  quizzes Quiz[]
+  attempts QuizAttempt[]
+}
+model Quiz {
+  id String @id
+  quizCode String @unique
+  title String
+  description String
+  category String
+  difficulty String
+  duration Int
+  totalMarks Float
+  startTime DateTime?
+  endTime DateTime?
+  leaderboardEnabled Boolean @default(true)
+  showAnswers Boolean @default(true)
+  showScore Boolean @default(true)
+  allowGuests Boolean @default(true)
+  shuffleQuestions Boolean @default(false)
+  shuffleOptions Boolean @default(false)
+  maxAttempts Int @default(1)
+  published Boolean @default(false)
+  createdAt DateTime @default(now())
+  creatorId String
+  creator User @relation(fields: [creatorId], references: [id])
+  questions Question[]
+  attempts QuizAttempt[]
+  @@index([creatorId])
+}
+model Question {
+  id String @id
+  quizId String
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  questionText String
+  marks Float
+  negativeMarks Float @default(0)
+  position Int
+  options Option[]
+  answers ParticipantAnswer[]
+  @@index([quizId])
+}
+model Option {
+  id String @id
+  questionId String
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  optionText String
+  isCorrect Boolean
+  answers ParticipantAnswer[]
+}
+model QuizAttempt {
+  id String @id
+  quizId String
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  userId String?
+  user User? @relation(fields: [userId], references: [id])
+  guestName String?
+  guestToken String?
+  startedAt DateTime @default(now())
+  deadline DateTime
+  submittedAt DateTime?
+  score Float @default(0)
+  percentage Float @default(0)
+  timeTaken Int @default(0)
+  status String @default("active")
+  questionOrder Json
+  optionOrder Json
+  answers ParticipantAnswer[]
+  @@index([quizId, userId])
+}
+model ParticipantAnswer {
+  id String @id
+  attemptId String
+  attempt QuizAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionId String
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedOptionId String?
+  selectedOption Option? @relation(fields: [selectedOptionId], references: [id])
+  isCorrect Boolean @default(false)
+  marksAwarded Float @default(0)
+  review Boolean @default(false)
+  @@unique([attemptId, questionId])
+}
